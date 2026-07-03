@@ -94,11 +94,12 @@ services:
       - key: RATE_LIMIT_MAX
         value: "100"  # 100 requests per window
 
-    # Disk (optional — for file caching)
-    disk:
-      name: cache
-      mountPath: /opt/render/.cache
-      sizeGB: 1
+    # Disk (optional — for file caching on paid plans)
+    # Free tier does not support disks. Remove this block if on free plan.
+    # disk:
+    #   name: cache
+    #   mountPath: /opt/render/.cache
+    #   sizeGB: 1
 
 # ============================================
 # Additional Resources (Optional)
