@@ -16,8 +16,8 @@ services:
   - type: web
     name: watchlist-backend
     runtime: node
-    repo: https://github.com/your-username/watchlist-app  # Replace with your repo URL
-    branch: main
+    #repo: https://github.com/your-username/watchlist-app  # Replace with your repo URL
+    #branch: main
     plan: free  # Upgrade to starter/standard for production
 
     # Build & Start Commands
