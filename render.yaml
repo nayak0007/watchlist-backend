@@ -1,0 +1,132 @@
+# render.yaml
+# Render Blueprint — one-click deployment for the WatchList Backend API
+# https://render.com/docs/blueprint-spec
+#
+# Usage:
+# 1. Push this repo to GitHub
+# 2. In Render Dashboard, click "New +" → "Blueprint"
+# 3. Connect your GitHub repo
+# 4. Render auto-detects this file and creates all resources
+# 5. Fill in the environment variables when prompted
+
+services:
+  # ============================================
+  # Web Service: WatchList Backend API
+  # ============================================
+  - type: web
+    name: watchlist-backend
+    runtime: node
+    repo: https://github.com/your-username/watchlist-app  # Replace with your repo URL
+    branch: main
+    plan: free  # Upgrade to starter/standard for production
+
+    # Build & Start Commands
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+
+    # Health Check
+    healthCheckPath: /api/health
+
+    # Auto-deploy on push to main branch
+    autoDeploy: true
+
+    # Environment Variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3000
+
+      # --- Supabase Configuration ---
+      - key: SUPABASE_URL
+        sync: false
+        # Value: https://your-project-id.supabase.co
+        # Get this from: Supabase Dashboard → Settings → API → Project URL
+
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+        # Value: your-service-role-key
+        # Get this from: Supabase Dashboard → Settings → API → service_role key
+        # WARNING: Keep this secret! Never expose to the client.
+
+      - key: SUPABASE_ANON_KEY
+        sync: false
+        # Value: your-anon-key
+        # Get this from: Supabase Dashboard → Settings → API → anon public key
+
+      # --- TMDB Configuration ---
+      - key: TMDB_API_KEY
+        sync: false
+        # Value: your-tmdb-api-key
+        # Get this from: https://www.themoviedb.org/settings/api
+
+      - key: TMDB_BEARER_TOKEN
+        sync: false
+        # Value: your-tmdb-bearer-token
+        # Get this from: https://www.themoviedb.org/settings/api → API Read Access Token
+
+      - key: TMDB_BASE_URL
+        value: https://api.themoviedb.org/3
+
+      - key: TMDB_IMAGE_BASE_URL
+        value: https://image.tmdb.org/t/p
+
+      # --- Gemini API Configuration ---
+      - key: GEMINI_API_KEY
+        sync: false
+        # Value: your-gemini-api-key
+        # Get this from: https://aistudio.google.com/app/apikey
+
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+
+      # --- CORS ---
+      - key: CORS_ORIGIN
+        value: "*"
+        # In production, set this to your Expo app's domain
+        # e.g., https://your-expo-app.com
+
+      # --- Rate Limiting ---
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"  # 15 minutes
+
+      - key: RATE_LIMIT_MAX
+        value: "100"  # 100 requests per window
+
+    # Disk (optional — for file caching)
+    disk:
+      name: cache
+      mountPath: /opt/render/.cache
+      sizeGB: 1
+
+# ============================================
+# Additional Resources (Optional)
+# ============================================
+
+# Cron Job: Clean up stale data (runs daily)
+# - type: cron
+#   name: cleanup-stale-data
+#   runtime: node
+#   schedule: "0 0 * * *"  # Daily at midnight UTC
+#   command: npm run cleanup
+#   envVars:
+#     - key: SUPABASE_URL
+#       fromService:
+#         name: watchlist-backend
+#         type: web
+#         envVarKey: SUPABASE_URL
+#     - key: SUPABASE_SERVICE_ROLE_KEY
+#       fromService:
+#         name: watchlist-backend
+#         type: web
+#         envVarKey: SUPABASE_SERVICE_ROLE_KEY
+
+# ============================================
+# Post-Deployment Steps
+# ============================================
+# After deployment:
+# 1. Run the SQL migration scripts in Supabase SQL Editor
+#    (scripts located in the sql/ directory of this repo)
+# 2. Verify health check: https://your-service.onrender.com/api/health
+# 3. Update the EXPO_PUBLIC_API_URL in your frontend .env
